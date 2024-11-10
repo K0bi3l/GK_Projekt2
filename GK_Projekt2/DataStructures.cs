@@ -58,6 +58,11 @@ namespace GK_Projekt2
 			this.NBeforeRotation = NBeforeRotation;
 			this.u = u;
 			this.v = v;
+
+			positionAfterRotation = Form1.controlVector;
+			tangentPUAfterRotation = Form1.controlVector;
+			tangentPVAfterRotation = Form1.controlVector;
+			NAfterRotation = Form1.controlVector;
 		}
 
 		public void SetCoordinatesAfterRotation(Vector3 positionAfterRotation, Vector3 tangentPUAfterRotation, Vector3 tangentPVAfterRotation, Vector3 NAfterRotation)

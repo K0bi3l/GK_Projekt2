@@ -6,6 +6,7 @@ namespace GK_Projekt2
 	public partial class Form1 : Form
 	{
 		List<Vector3> controlPoints;
+		List<Vector3> controlPointsToPrint;
 		Vector3[,] controlPointsArray;
 		List<Vertex> vertices;
 		public Bitmap bitmap;
@@ -13,6 +14,8 @@ namespace GK_Projekt2
 
 		public float alpha;
 		public float beta;
+
+		public static Vector3 controlVector = new Vector3(int.MinValue,int.MinValue, int.MinValue);
 
 		public Form1()
 		{
@@ -58,6 +61,7 @@ namespace GK_Projekt2
 				Vector3 N = Vector3.Cross(UNormal, VNormal);
 				vertices.Add(new Vertex(v, UNormal, VNormal, N, (v.X - ax) / bx, (v.Y - ay) / by));
 			}
+			controlPointsToPrint = new List<Vector3>(controlPoints);
 		}
 
 		private void CreateBitmap(int width, int height)
@@ -88,43 +92,46 @@ namespace GK_Projekt2
 			DrawVertices();
 		}
 
-
-
 		public void DrawVertices()
 		{
 			Graphics g = Graphics.FromImage(bitmap);
 			g.TranslateTransform(MyPictureBox.Width / 2, MyPictureBox.Height / 2);
 			Pen pen = new Pen(Color.Black, 1);
-			foreach (Vector3 v in controlPoints)
+
+			g.Clear(Color.White); // Przy ka¿dym rysowaniu rysujemy od nowa
+			
+			foreach(var v in controlPointsToPrint)
 			{
 				g.FillRectangle(Brushes.Black, v.X, v.Y, 5, 5);
 				DrawLines(v, g, pen);
 			}
-
+			MyPictureBox.Invalidate();
 		}
+		
 
 		public void DrawLines(Vector3 v, Graphics g, Pen pen)
 		{			
-			int index = controlPoints.IndexOf(v);
+			int index = controlPointsToPrint.IndexOf(v);
 			if (index == 15) return;
 			else if(index > 11)
 			{
-				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPoints[index + 1].X, (int)controlPoints[index + 1].Y));				
+				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPointsToPrint[index + 1].X, (int)controlPointsToPrint[index + 1].Y));				
 			}
 			else if (index % 4 == 3)
 			{
-				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPoints[index + 4].X, (int)controlPoints[index + 4].Y));				
+				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPointsToPrint[index + 4].X, (int)controlPointsToPrint[index + 4].Y));				
 			}
 			else
 			{
-				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPoints[index + 1].X, (int)controlPoints[index + 1].Y));
-				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPoints[index + 4].X, (int)controlPoints[index + 4].Y));
+				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPointsToPrint[index + 1].X, (int)controlPointsToPrint[index + 1].Y));
+				g.DrawLine(pen, new Point((int)v.X, (int)v.Y), new Point((int)controlPointsToPrint[index + 4].X, (int)controlPointsToPrint[index + 4].Y));
 			}
 		}
 
 
 		private void trackBar1_Scroll(object sender, EventArgs e)
 		{
+			
 			int value = TriangulationTrackBar.Value;
 			if (value % 2 == 1)
 			{
@@ -140,6 +147,7 @@ namespace GK_Projekt2
 			AlphaLabel.Text = $"Obrót o alpha = {AlphaTrackBar.Value} deg";
 
 			RotateMeshX(alpha);
+			DrawVertices();
 		}
 
 		private void BetaTrackBar_Scroll(object sender, EventArgs e)
@@ -147,26 +155,56 @@ namespace GK_Projekt2
 			beta = BetaTrackBar.Value;
 			BetaLabel.Text = $"Obrót o beta = {BetaTrackBar.Value} deg";
 
-			RotateMeshY(beta);
+			RotateMeshZ(beta);
+			DrawVertices();
 		}
 
 		public void RotateMeshX(float alpha)
 		{
 			float phi = (float)(alpha * Math.PI / 180);
 			float[,] rotation = Rotations.GetXRotation(phi);
+			Rotate(rotation);
+		}
+
+		public void RotateMeshZ(float beta)
+		{
+			float phi = (float)(alpha * Math.PI / 180);
+			float[,] rotation = Rotations.GetZRotation(phi);
+			Rotate(rotation); 
+			// rotacja do poprawy bo siê nie krêci
+			/*foreach (Vertex v in vertices) 
+			{
+				Vector3 positionAfterRotation = RotationsCalculator.Rotate(v.positionAfterRotation, rotation);
+				Vector3 tangentPUAfterRotation = RotationsCalculator.Rotate(v.tangentPUAfterRotation, rotation);
+				Vector3 tangentPVAfterRotation = RotationsCalculator.Rotate(v.tangentPVAfterRotation, rotation);
+				Vector3 NAfterRotation = RotationsCalculator.Rotate(v.NAfterRotation, rotation);
+				v.SetCoordinatesAfterRotation(positionAfterRotation, tangentPUAfterRotation, tangentPVAfterRotation, NAfterRotation);
+				int i = controlPoints.IndexOf(v.positionBeforeRotation);
+				controlPointsToPrint.RemoveAt(i);
+				controlPointsToPrint.Insert(i, CopyVector(v.positionAfterRotation));
+
+			}*/
+		}
+
+		public void Rotate(float[,] rotation)
+		{
 			foreach (Vertex v in vertices)
 			{
 				Vector3 positionAfterRotation = RotationsCalculator.Rotate(v.positionBeforeRotation, rotation);
 				Vector3 tangentPUAfterRotation = RotationsCalculator.Rotate(v.tangentPUBeforeRotation, rotation);
 				Vector3 tangentPVAfterRotation = RotationsCalculator.Rotate(v.tangentPVBeforeRotation, rotation);
 				Vector3 NAfterRotation = RotationsCalculator.Rotate(v.NBeforeRotation, rotation);
-				v.SetCoordinatesAfterRotation(positionAfterRotation, tangentPUAfterRotation, tangentPVAfterRotation, NAfterRotation);				
+				v.SetCoordinatesAfterRotation(positionAfterRotation, tangentPUAfterRotation, tangentPVAfterRotation, NAfterRotation);
+				int i = controlPoints.IndexOf(v.positionBeforeRotation);
+				controlPointsToPrint.RemoveAt(i);
+				controlPointsToPrint.Insert(i, CopyVector(v.positionAfterRotation));
+				
 			}
 		}
 
-		public void RotateMeshY(float beta)
+		public Vector3 CopyVector(Vector3 v)
 		{
-
+			return new Vector3(v.X, v.Y, v.Z);
 		}
 	}
 }
