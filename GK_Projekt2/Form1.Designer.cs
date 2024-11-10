@@ -107,6 +107,7 @@
 			AlphaTrackBar.BackColor = SystemColors.Window;
 			AlphaTrackBar.Location = new Point(531, 0);
 			AlphaTrackBar.Maximum = 45;
+			AlphaTrackBar.Minimum = -45;
 			AlphaTrackBar.Name = "AlphaTrackBar";
 			AlphaTrackBar.Size = new Size(269, 69);
 			AlphaTrackBar.TabIndex = 5;

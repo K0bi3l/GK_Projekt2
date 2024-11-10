@@ -1,6 +1,7 @@
 using FastBitmapLib;
 using System.Drawing;
-using System.Numerics; 
+using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 namespace GK_Projekt2
 {
 	public partial class Form1 : Form
@@ -146,7 +147,8 @@ namespace GK_Projekt2
 			alpha = AlphaTrackBar.Value;
 			AlphaLabel.Text = $"Obrót o alpha = {AlphaTrackBar.Value} deg";
 
-			RotateMeshX(alpha);
+			//RotateMeshZ(alpha);
+			RotateMesh();
 			DrawVertices();
 		}
 
@@ -155,11 +157,21 @@ namespace GK_Projekt2
 			beta = BetaTrackBar.Value;
 			BetaLabel.Text = $"Obrót o beta = {BetaTrackBar.Value} deg";
 
-			RotateMeshZ(beta);
+			//RotateMeshX(beta);
+			RotateMesh();
 			DrawVertices();
 		}
 
-		public void RotateMeshX(float alpha)
+		public void RotateMesh()
+		{
+			float phi = (float)(alpha * Math.PI / 180);
+			float[,] ZRotation = Rotations.GetZRotation(phi);
+			phi = (float)(beta * Math.PI / 180);
+			float[,] XRotation = Rotations.GetXRotation(phi);
+			Rotate(XRotation,ZRotation);
+		}
+
+		/*public void RotateMeshX(float alpha)
 		{
 			float phi = (float)(alpha * Math.PI / 180);
 			float[,] rotation = Rotations.GetXRotation(phi);
@@ -172,18 +184,6 @@ namespace GK_Projekt2
 			float[,] rotation = Rotations.GetZRotation(phi);
 			Rotate(rotation); 
 			// rotacja do poprawy bo siê nie krêci
-			/*foreach (Vertex v in vertices) 
-			{
-				Vector3 positionAfterRotation = RotationsCalculator.Rotate(v.positionAfterRotation, rotation);
-				Vector3 tangentPUAfterRotation = RotationsCalculator.Rotate(v.tangentPUAfterRotation, rotation);
-				Vector3 tangentPVAfterRotation = RotationsCalculator.Rotate(v.tangentPVAfterRotation, rotation);
-				Vector3 NAfterRotation = RotationsCalculator.Rotate(v.NAfterRotation, rotation);
-				v.SetCoordinatesAfterRotation(positionAfterRotation, tangentPUAfterRotation, tangentPVAfterRotation, NAfterRotation);
-				int i = controlPoints.IndexOf(v.positionBeforeRotation);
-				controlPointsToPrint.RemoveAt(i);
-				controlPointsToPrint.Insert(i, CopyVector(v.positionAfterRotation));
-
-			}*/
 		}
 
 		public void Rotate(float[,] rotation)
@@ -199,6 +199,20 @@ namespace GK_Projekt2
 				controlPointsToPrint.RemoveAt(i);
 				controlPointsToPrint.Insert(i, CopyVector(v.positionAfterRotation));
 				
+			}
+		}*/
+		public void Rotate(float[,] XRotation, float[,] ZRotation)
+		{
+			foreach(var v in vertices)
+			{
+				Vector3 positionAfterRotation = RotationsCalculator.Rotate(v.positionBeforeRotation, XRotation,ZRotation);
+				Vector3 tangentPUAfterRotation = RotationsCalculator.Rotate(v.tangentPUBeforeRotation, XRotation,ZRotation);
+				Vector3 tangentPVAfterRotation = RotationsCalculator.Rotate(v.tangentPVBeforeRotation, XRotation, ZRotation);
+				Vector3 NAfterRotation = RotationsCalculator.Rotate(v.NBeforeRotation, XRotation, ZRotation);
+				v.SetCoordinatesAfterRotation(positionAfterRotation, tangentPUAfterRotation, tangentPVAfterRotation, NAfterRotation);
+				int i = controlPoints.IndexOf(v.positionBeforeRotation);
+				controlPointsToPrint.RemoveAt(i);
+				controlPointsToPrint.Insert(i, CopyVector(v.positionAfterRotation));
 			}
 		}
 

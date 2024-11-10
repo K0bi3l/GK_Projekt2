@@ -121,5 +121,10 @@ namespace GK_Projekt2
 								vector.X * rotation[1, 0] + vector.Y * rotation[1, 1] + vector.Z * rotation[1, 2],
 								vector.X * rotation[2, 0] + vector.Y * rotation[2, 1] + vector.Z * rotation[2, 2]);
 		}
+
+		public static Vector3 Rotate(Vector3 vector, float[,] ZRotation, float[,] XRotation)
+		{
+			return Rotate(Rotate(vector, XRotation), ZRotation);
+		}
     }
 }
