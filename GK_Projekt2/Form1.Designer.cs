@@ -48,8 +48,11 @@
 			mLabel = new Label();
 			zTrackBar = new TrackBar();
 			zLabel = new Label();
-			colorCheckBox = new CheckBox();
 			textureCheckBox = new CheckBox();
+			standingLightCheckBox = new CheckBox();
+			movingLightCceckBox = new CheckBox();
+			normalMapCheckBox = new CheckBox();
+			normalMapButton = new Button();
 			((System.ComponentModel.ISupportInitialize)MyPictureBox).BeginInit();
 			((System.ComponentModel.ISupportInitialize)TriangulationTrackBar).BeginInit();
 			((System.ComponentModel.ISupportInitialize)AlphaTrackBar).BeginInit();
@@ -137,6 +140,7 @@
 			// 
 			BetaTrackBar.BackColor = SystemColors.Window;
 			BetaTrackBar.Location = new Point(869, 40);
+			BetaTrackBar.Maximum = 90;
 			BetaTrackBar.Name = "BetaTrackBar";
 			BetaTrackBar.Size = new Size(299, 69);
 			BetaTrackBar.TabIndex = 6;
@@ -255,6 +259,7 @@
 			// 
 			// zTrackBar
 			// 
+			zTrackBar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			zTrackBar.Location = new Point(1373, 543);
 			zTrackBar.Maximum = 95;
 			zTrackBar.Minimum = -95;
@@ -267,6 +272,7 @@
 			// 
 			// zLabel
 			// 
+			zLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			zLabel.AutoSize = true;
 			zLabel.Location = new Point(1373, 702);
 			zLabel.Name = "zLabel";
@@ -274,23 +280,10 @@
 			zLabel.TabIndex = 17;
 			zLabel.Text = "z: 0.5";
 			// 
-			// colorCheckBox
-			// 
-			colorCheckBox.AutoSize = true;
-			colorCheckBox.Checked = true;
-			colorCheckBox.CheckState = CheckState.Checked;
-			colorCheckBox.Location = new Point(1197, 41);
-			colorCheckBox.Name = "colorCheckBox";
-			colorCheckBox.Size = new Size(129, 29);
-			colorCheckBox.TabIndex = 18;
-			colorCheckBox.Text = "Jeden kolor";
-			colorCheckBox.UseVisualStyleBackColor = true;
-			colorCheckBox.CheckedChanged += colorCheckBox_CheckedChanged;
-			// 
 			// textureCheckBox
 			// 
 			textureCheckBox.AutoSize = true;
-			textureCheckBox.Location = new Point(1197, 72);
+			textureCheckBox.Location = new Point(1197, 41);
 			textureCheckBox.Name = "textureCheckBox";
 			textureCheckBox.Size = new Size(102, 29);
 			textureCheckBox.TabIndex = 19;
@@ -298,14 +291,63 @@
 			textureCheckBox.UseVisualStyleBackColor = true;
 			textureCheckBox.CheckedChanged += textureCheckBox_CheckedChanged;
 			// 
+			// standingLightCheckBox
+			// 
+			standingLightCheckBox.AutoSize = true;
+			standingLightCheckBox.Checked = true;
+			standingLightCheckBox.CheckState = CheckState.Checked;
+			standingLightCheckBox.Location = new Point(12, 120);
+			standingLightCheckBox.Name = "standingLightCheckBox";
+			standingLightCheckBox.Size = new Size(130, 29);
+			standingLightCheckBox.TabIndex = 20;
+			standingLightCheckBox.Text = "Światło stoi";
+			standingLightCheckBox.UseVisualStyleBackColor = true;
+			standingLightCheckBox.CheckedChanged += standingLightCheckBox_CheckedChanged;
+			// 
+			// movingLightCceckBox
+			// 
+			movingLightCceckBox.AutoSize = true;
+			movingLightCceckBox.Location = new Point(12, 158);
+			movingLightCceckBox.Name = "movingLightCceckBox";
+			movingLightCceckBox.Size = new Size(166, 29);
+			movingLightCceckBox.TabIndex = 21;
+			movingLightCceckBox.Text = "światło się rusza";
+			movingLightCceckBox.UseVisualStyleBackColor = true;
+			movingLightCceckBox.CheckedChanged += movingLightCceckBox_CheckedChanged;
+			// 
+			// normalMapCheckBox
+			// 
+			normalMapCheckBox.AutoSize = true;
+			normalMapCheckBox.Location = new Point(1197, 80);
+			normalMapCheckBox.Name = "normalMapCheckBox";
+			normalMapCheckBox.Size = new Size(163, 29);
+			normalMapCheckBox.TabIndex = 22;
+			normalMapCheckBox.Text = "Mapa normalna";
+			normalMapCheckBox.UseVisualStyleBackColor = true;
+			normalMapCheckBox.CheckedChanged += normalMapCheckBox_CheckedChanged;
+			// 
+			// normalMapButton
+			// 
+			normalMapButton.Location = new Point(1197, 115);
+			normalMapButton.Name = "normalMapButton";
+			normalMapButton.Size = new Size(163, 72);
+			normalMapButton.TabIndex = 23;
+			normalMapButton.Text = "wybierz mapę  normalną";
+			normalMapButton.TextAlign = ContentAlignment.TopCenter;
+			normalMapButton.UseVisualStyleBackColor = true;
+			normalMapButton.Click += normalMapButton_Click;
+			// 
 			// Form1
 			// 
 			AutoScaleDimensions = new SizeF(10F, 25F);
 			AutoScaleMode = AutoScaleMode.Font;
 			BackColor = SystemColors.Window;
 			ClientSize = new Size(1478, 744);
+			Controls.Add(normalMapButton);
+			Controls.Add(normalMapCheckBox);
+			Controls.Add(movingLightCceckBox);
+			Controls.Add(standingLightCheckBox);
 			Controls.Add(textureCheckBox);
-			Controls.Add(colorCheckBox);
 			Controls.Add(zLabel);
 			Controls.Add(zTrackBar);
 			Controls.Add(mLabel);
@@ -365,7 +407,10 @@
 		private TrackBar zTrackBar;
 		private Label zLabel;
 		private ToolStripMenuItem wybierzKolorObiektuToolStripMenuItem;
-		private CheckBox colorCheckBox;
 		private CheckBox textureCheckBox;
+		private CheckBox standingLightCheckBox;
+		private CheckBox movingLightCceckBox;
+		private CheckBox normalMapCheckBox;
+		private Button normalMapButton;
 	}
 }

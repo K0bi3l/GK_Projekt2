@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace GK_Projekt2
 {
+
+	/// <summary>
+	/// do poprawy to, żeby światło nie cofało się do początkowej pozycji
+	/// </summary>
 	public class Light
 	{
 		public Vector3 L;
@@ -25,13 +29,14 @@ namespace GK_Projekt2
 
 		public void UpdatePosition()
 		{
-			L = lightMover.UpdatePosition().position;
+			L = lightMover.UpdatePosition().direction;
 		}
 		
 		public double CalculateLightIntensity(float ll, float l0, Vector3 N)
 		{
 			Vector3 V = new Vector3(0, 0, 1);
 			Vector3 R = Vector3.Normalize(2 * N * Vector3.Dot(N, L) - L);
+			N = Vector3.Normalize(N);
 			double ret = Form1.kd * Form1.ks * ll *l0 * (Math.Max(Vector3.Dot(N, L), 0) + Form1.ks*ll* l0 * Math.Pow(Math.Max(Vector3.Dot(R, V), 0), Form1.m));
 			if (ret >= 0 && ret <= 1) return ret;
 			else if(ret < 0) return 0;
@@ -60,8 +65,8 @@ namespace GK_Projekt2
 			float scale = MathF.Sqrt((1 - z * z) / (L.X * L.X + L.Y * L.Y));
 
 			// Nowe wartości X i Y
-			float newX = L.X * scale;
-			float newY = L.Y * scale;
+			float newX = a * scale;
+			float newY = b * scale;
 
 			// Zwracamy nowy, zaktualizowany wektor normalny
 			L = new Vector3(newX, newY, z);
@@ -73,8 +78,8 @@ namespace GK_Projekt2
 			angle += speed;
 
 			// Obliczenie pozycji na elipsie
-			float x = a * MathF.Cos(angle);
-			float y = b * MathF.Sin(angle);
+			float x = L.X * MathF.Cos(speed);
+			float y = L.Y * MathF.Sin(speed);
 			Vector3 position = new Vector3(x, y, z);
 
 			// Obliczenie stycznej do elipsy

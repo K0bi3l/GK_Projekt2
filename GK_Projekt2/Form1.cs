@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
+
 namespace GK_Projekt2
 {
 	public partial class Form1 : Form
@@ -12,16 +13,21 @@ namespace GK_Projekt2
 		public static Color LightColor;
 		public static Color MeshColor;
 		public static PictureBox pictureBox;
-		public static Bitmap originalBitmap;
+		public static Bitmap imageBitmap = new Bitmap(Environment.CurrentDirectory + @"\bricks.png");
+		public static Bitmap normalMap = new Bitmap(Environment.CurrentDirectory + @"/normalMap.png");
+
 
 		List<Vector3> controlPoints;
 		List<Vector3> controlPointsToPrint;
-		Vector3[,] controlPointsArray;
+		public static Vector3[,] controlPointsArray;
 		List<Vertex> vertices;
 		public Mesh mesh;
+		public bool isRunning;
+		public static bool isTexture;
+		public static bool isNormalMap;
 
-		public float alpha;
-		public float beta;
+		public static float alpha;
+		public static float beta;
 		public static float kd;
 		public static float ks;
 		public static int m;
@@ -31,6 +37,7 @@ namespace GK_Projekt2
 
 		public delegate void MoveLight();
 		public event MoveLight MoveLightEvent;
+		Thread th;
 
 		public Form1()
 		{
@@ -47,6 +54,9 @@ namespace GK_Projekt2
 			colorDialog = new ColorDialog();
 			LightColor = Color.FromArgb(255, 255, 255);
 			MeshColor = Color.Yellow;
+			isRunning = false;
+			isTexture = false;
+			isNormalMap = false;
 
 			alpha = 0;
 			beta = 0;
@@ -56,19 +66,19 @@ namespace GK_Projekt2
 			this.Load += (s, e) => mesh = CreateMesh(TriangulationTrackBar.Value);
 			this.Load += (s, e) => DrawMesh();
 			this.Load += (s, e) => DrawVertices();
-			//this.Load += (s, e) => FillMesh();
+
 			InitializeComponent();
 			pictureBox = MyPictureBox;
 			MoveLightEvent += LightMove;
-			Thread th = new Thread(ML);
+			th = new Thread(ML);
 			th.IsBackground = true;
-			//th.Start();
+			th.Start();
+
 
 		}
 
 		public void LightMove()
 		{
-			Console.WriteLine("LightMove");
 			Mutex mutex = new Mutex();
 			mutex.WaitOne();
 			mesh.l.UpdatePosition();
@@ -84,8 +94,12 @@ namespace GK_Projekt2
 		{
 			for (; ; )
 			{
-				Thread.Sleep(1000);
-				MoveLightEvent.Invoke();
+				if (isRunning)
+				{
+					Thread.Sleep(30);
+					MoveLightEvent.Invoke();
+				}
+				else Thread.Sleep(500);
 			}
 
 		}
@@ -154,7 +168,7 @@ namespace GK_Projekt2
 		{
 			Graphics g = Graphics.FromImage(bitmap);
 			g.TranslateTransform(MyPictureBox.Width / 2, MyPictureBox.Height / 2);
-			Pen pen = new Pen(Color.Black, 1);
+
 
 			//g.Clear(Color.White); // Przy ka¿dym rysowaniu rysujemy od nowa
 
@@ -197,9 +211,10 @@ namespace GK_Projekt2
 			}
 			TriangulationLabel.Text = $"Dok³adnoœæ Triangulacji:{TriangulationTrackBar.Value}";
 			mesh = CreateMesh(TriangulationTrackBar.Value);
+			RotateMesh();
 			DrawMesh();
-			if (FillRadioButton.Checked) FillMesh();
-			DrawVertices();
+			if (FillRadioButton.Checked || textureCheckBox.Checked) FillMesh();
+			//DrawVertices();
 		}
 
 		private void AlphaTrackBar_Scroll(object sender, EventArgs e)
@@ -209,6 +224,7 @@ namespace GK_Projekt2
 
 			RotateMesh();
 			DrawMesh();
+
 			if (FillRadioButton.Checked) FillMesh();
 			DrawVertices();
 		}
@@ -226,7 +242,7 @@ namespace GK_Projekt2
 
 		public void DrawMesh()
 		{
-			Graphics g = Graphics.FromImage(bitmap);			
+			Graphics g = Graphics.FromImage(bitmap);
 
 			g.TranslateTransform(MyPictureBox.Width / 2, MyPictureBox.Height / 2);
 			Pen pen = new Pen(Color.Black, 1);
@@ -236,7 +252,10 @@ namespace GK_Projekt2
 				t.DrawTriangle(g, pen);
 			}
 			MyPictureBox.Invalidate();
+
+
 		}
+
 
 		public void RotateMesh()
 		{
@@ -306,7 +325,7 @@ namespace GK_Projekt2
 					triangles.Add(new Triangle(points[i + 1, j], points[i + 1, j + 1], points[i, j + 1]));
 				}
 			}
-			return new Mesh(triangles);
+			return new Mesh(triangles, mesh.l);
 		}
 
 
@@ -330,7 +349,7 @@ namespace GK_Projekt2
 		{
 			kd = (float)(kdTrackBar.Value * 0.01);
 			kdLabel.Text = $"Kd: {kd}";
-			if (FillRadioButton.Checked)
+			if (FillRadioButton.Checked || textureCheckBox.Checked)
 			{
 				FillMesh();
 				MyPictureBox.Invalidate();
@@ -341,7 +360,7 @@ namespace GK_Projekt2
 		{
 			ks = (float)(ksTrackBar.Value * 0.01);
 			ksLabel.Text = $"Ks: {ks}";
-			if (FillRadioButton.Checked)
+			if (FillRadioButton.Checked || textureCheckBox.Checked)
 			{
 				FillMesh();
 				MyPictureBox.Invalidate();
@@ -352,7 +371,7 @@ namespace GK_Projekt2
 		{
 			m = mTrackBar.Value;
 			mLabel.Text = $"m: {m}";
-			if (FillRadioButton.Checked)
+			if (FillRadioButton.Checked || textureCheckBox.Checked)
 			{
 				FillMesh();
 				MyPictureBox.Invalidate();
@@ -366,17 +385,17 @@ namespace GK_Projekt2
 			z = (float)(zTrackBar.Value * 0.01);
 			mesh.l.MoveLight(z);
 			zLabel.Text = $"Z: {z}";
-			if (FillRadioButton.Checked)
+			if (FillRadioButton.Checked || textureCheckBox.Checked)
 			{
 				FillMesh();
 				MyPictureBox.Invalidate();
 			}
 
+
 		}
 
 		private void FillRadioButton_CheckedChanged(object sender, EventArgs e)
 		{
-
 			if (FillRadioButton.Checked)
 			{
 				FillMesh();
@@ -409,32 +428,113 @@ namespace GK_Projekt2
 			}
 		}
 
-		private void colorCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
-			if (colorCheckBox.Checked)
-			{
-				textureCheckBox.Checked = false;
-			}
-			else
-			{
-				textureCheckBox.Checked = true;
-			}
-		}
+
 
 		private void textureCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
-			if(textureCheckBox.Checked)
+			if (textureCheckBox.Checked)
 			{
-			
-				//originalBitmap = new Bitmap(Environment.CurrentDirectory + @"\bricks.png");
-				colorCheckBox.Checked = false;
-				//MyPictureBox.Invalidate();
+				isTexture = true;
+				FillMesh();
+				MyPictureBox.Invalidate();
 			}
 			else
 			{
-				colorCheckBox.Checked = true;
+				isTexture = false;
+				if (FillRadioButton.Checked) FillMesh();
+				else
+				{
+
+					DrawMesh();
+					DrawVertices();
+				}
+				MyPictureBox.Invalidate();
 			}
+		}
+
+		private void standingLightCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (standingLightCheckBox.Checked)
+			{
+				isRunning = false;
+				movingLightCceckBox.Checked = false;
+			}
+			else
+			{
+				movingLightCceckBox.Checked = true;
+			}
+		}
+
+		private void movingLightCceckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (movingLightCceckBox.Checked)
+			{
+				isRunning = true;
+				standingLightCheckBox.Checked = false;
+			}
+			else
+			{
+				standingLightCheckBox.Checked = true;
+			}
+		}
+
+		private void normalMapCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (normalMapCheckBox.Checked)
+			{
+				isNormalMap = true;
+				SetNormalMapVectors();
+				FillMesh();
+				MyPictureBox.Invalidate();
+			}
+			else
+			{
+				isNormalMap = false;
+				SetClassicNormalVectors();
+				if (FillRadioButton.Checked) FillMesh();
+				else
+				{
+
+					DrawMesh();
+					DrawVertices();
+				}
+				MyPictureBox.Invalidate();
+			}
+		}
+
+		public void SetNormalMapVectors()
+		{
+			mesh.SetNormalMapVectors();
+		}
+
+		public void SetClassicNormalVectors()
+		{
+			mesh.SetClassicNormalVectors(controlPointsArray);
+		}
+
+		private void normalMapButton_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog dialog = new OpenFileDialog();
+			string currentDirectory = Environment.CurrentDirectory;
 			
+			string parentDirectory = Directory.GetParent(currentDirectory).FullName;
+			for(int i = 0; i < 2; i++)
+			{
+				parentDirectory = Directory.GetParent(parentDirectory).FullName;
+			}
+			dialog.Filter = "Image Files(*.JPG;*.PNG)|*.JPG;*.PNG";
+			dialog.InitialDirectory = parentDirectory;
+			
+			if (dialog.ShowDialog() == DialogResult.OK)
+			{
+				 = new Bitmap(dialog.FileName);
+				normalMapCheckBox.Checked = true;
+				isNormalMap = true;
+				SetNormalMapVectors();
+				FillMesh();
+				MyPictureBox.Invalidate();
+			}
+
 		}
 	}
 }
