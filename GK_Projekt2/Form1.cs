@@ -14,7 +14,7 @@ namespace GK_Projekt2
 		public static Color MeshColor;
 		public static PictureBox pictureBox;
 		public static Bitmap imageBitmap = new Bitmap(Environment.CurrentDirectory + @"\bricks.png");
-		public static Bitmap normalMap = new Bitmap(Environment.CurrentDirectory + @"/normalMap.png");
+		public static Bitmap normalMap = new Bitmap(Environment.CurrentDirectory +  @"/normalMap.png");
 
 
 		List<Vector3> controlPoints;
@@ -527,7 +527,7 @@ namespace GK_Projekt2
 			
 			if (dialog.ShowDialog() == DialogResult.OK)
 			{
-				 = new Bitmap(dialog.FileName);
+				normalMap = new Bitmap(dialog.FileName);
 				normalMapCheckBox.Checked = true;
 				isNormalMap = true;
 				SetNormalMapVectors();
